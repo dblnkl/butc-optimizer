@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BUTc // MOB Datacenter Optimizer</title>
+<title>BUTc // Datacenter Optimizer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -501,6 +501,223 @@ main {
 .callout.warn { border-left-color: var(--amber); }
 .callout.good { border-left-color: var(--green); }
 
+/* === CAPACITY BAR === */
+.capacity-bar {
+  position: relative;
+  height: 36px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 4px 0 16px;
+}
+.capacity-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--accent), var(--thermal-mild));
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.capacity-fill.warn { background: linear-gradient(90deg, var(--thermal-mild), var(--thermal-warm)); }
+.capacity-fill.hot  { background: linear-gradient(90deg, var(--thermal-warm), var(--thermal-crit)); }
+.capacity-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+}
+.capacity-label .pct { color: var(--text-primary); }
+.capacity-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+/* === MATH PAGE === */
+.toc-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin: 32px 0 48px;
+}
+.toc-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.toc-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 24px;
+}
+.toc-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 5px 0;
+  transition: color 0.15s ease, transform 0.15s ease;
+  display: block;
+}
+.toc-links a:hover {
+  color: var(--accent);
+  transform: translateX(4px);
+}
+.toc-num { color: var(--text-dim); margin-right: 8px; }
+
+.math-section {
+  margin-top: 56px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: 96px;
+}
+.math-section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+.math-section .m-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.2em;
+  margin-bottom: 10px;
+}
+.math-section h2 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+.math-section p {
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+  max-width: 720px;
+}
+.math-section p strong { color: var(--text-primary); font-weight: 600; }
+.math-section p .em { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+.math-section ul { margin: 8px 0 20px 20px; max-width: 720px; }
+.math-section li {
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 6px;
+}
+
+.formula {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 18px 22px;
+  margin: 20px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  color: var(--text-primary);
+  font-weight: 500;
+  overflow-x: auto;
+  line-height: 1.7;
+}
+.formula .var { color: var(--accent); }
+.formula .val { color: var(--amber); }
+.formula .comment { color: var(--text-dim); font-style: italic; font-weight: 400; }
+.formula .op { color: var(--text-muted); }
+.formula .arrow { color: var(--text-muted); margin: 0 8px; }
+
+.defbox {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 24px;
+  margin: 16px 0 24px;
+  padding: 18px 22px;
+  background: var(--bg-panel);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  max-width: 720px;
+}
+.defbox dt {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.defbox dd {
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.chart-wrap {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px 20px 12px;
+  margin: 24px 0;
+  max-width: 720px;
+}
+.chart-wrap svg { display: block; width: 100%; height: auto; }
+.chart-caption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
+  letter-spacing: 0.05em;
+}
+
+.const-table {
+  width: 100%;
+  max-width: 720px;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+.const-table thead th {
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.const-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+}
+.const-table tbody td:first-child {
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--text-secondary);
+}
+.const-table tbody td .accent-num { color: var(--accent); font-weight: 500; }
+.const-table tbody tr:last-child td { border-bottom: none; }
+.const-table tbody tr.highlight { background: rgba(34, 211, 238, 0.04); }
+.const-table td.dim { color: var(--text-dim); }
+
 /* === DETAILS === */
 details {
   border-top: 1px solid var(--border);
@@ -573,13 +790,14 @@ footer a:hover { color: var(--accent); }
   <div class="nav-inner">
     <div class="brand">
       <span class="brand-dot"></span>
-      <span class="brand-label">BUTc Calculator</span>
-      <span class="brand-sub">// Jack G.</span>
+      <span class="brand-label">BUTc</span>
+      <span class="brand-sub">// datacenter optimizer</span>
     </div>
     <div class="tabs" role="tablist">
       <button class="tab active" data-tab="loss" role="tab">Loss Snapshot</button>
       <button class="tab" data-tab="calc" role="tab">AC Calculator</button>
       <button class="tab" data-tab="opt" role="tab">Optimal Setup</button>
+      <button class="tab" data-tab="math" role="tab">The Math</button>
     </div>
   </div>
 </nav>
@@ -623,7 +841,7 @@ footer a:hover { color: var(--accent); }
       <span class="sub">what you have on the ground</span>
     </div>
     <div class="panel-body">
-      <div class="input-grid">
+      <div class="input-grid" style="grid-template-columns: 1fr 1fr 1fr;">
         <div class="field">
           <label class="field-label" for="l-racks">Number of racks</label>
           <input class="field-input mono" type="number" id="l-racks" value="178" min="0">
@@ -633,12 +851,8 @@ footer a:hover { color: var(--accent); }
           <input class="field-input mono" type="number" id="l-perfect" value="1424" min="0" step="0.1">
         </div>
         <div class="field">
-          <label class="field-label" for="l-small">Small ACs deployed</label>
-          <input class="field-input mono" type="number" id="l-small" value="262" min="0">
-        </div>
-        <div class="field">
-          <label class="field-label" for="l-big">Big ACs deployed</label>
-          <input class="field-input mono" type="number" id="l-big" value="0" min="0">
+          <label class="field-label" for="l-cool-in">Cooling delivered <span class="hint">total, from all ACs</span></label>
+          <input class="field-input mono" type="number" id="l-cool-in" value="2358" min="0">
         </div>
       </div>
     </div>
@@ -674,6 +888,31 @@ footer a:hover { color: var(--accent); }
         <div class="result-row"><span class="lbl">Cooling covers heat?</span><span class="val" id="l-covers">—</span></div>
       </div>
       <div class="callout" id="l-callout"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">04</span>
+      <h2>Expansion analysis</h2>
+      <span class="sub">rebuild, fill up, or add a new building?</span>
+    </div>
+    <div class="panel-body">
+      <div class="input-grid" style="grid-template-columns: 1fr;">
+        <div class="field">
+          <label class="field-label" for="l-cap">Building power limit <span class="hint">0 to skip</span></label>
+          <input class="field-input mono" type="number" id="l-cap" value="0" min="0">
+        </div>
+      </div>
+      <div class="capacity-bar" id="l-cap-bar-wrap" style="margin-top:16px;">
+        <div class="capacity-fill" id="l-cap-fill" style="width: 0%"></div>
+        <div class="capacity-label" id="l-cap-lbl"><span class="pct">Set a limit above</span></div>
+      </div>
+      <div class="result-list">
+        <div class="result-row"><span class="lbl">Max BUTc this building could produce <span style="color:var(--text-dim)">(cap, optimized)</span></span><span class="val mono" id="l-cap-max">—</span></div>
+        <div class="result-row emphasize"><span class="lbl strong">Growth headroom  (current → maxed)</span><span class="val mono" id="l-cap-headroom">—</span></div>
+      </div>
+      <div class="callout" id="l-cap-callout"></div>
     </div>
   </div>
 
@@ -926,10 +1165,307 @@ footer a:hover { color: var(--accent); }
 
 </div>
 
+<!-- ============= PAGE 4: MATH ============= -->
+<div class="page" id="page-math">
+
+  <div class="eyebrow">Reference · Under the hood</div>
+  <h1 class="title">The math,<br><span>top down</span></h1>
+  <p class="lede">Every formula the site uses, derived from first principles. Starts with the one equation that matters, then drills into each piece, then shows where the ~13% sweet spot comes from.</p>
+
+  <div class="toc-panel">
+    <div class="toc-label">// Contents</div>
+    <div class="toc-links">
+      <a href="#m1"><span class="toc-num">01</span>The core equation</a>
+      <a href="#m2"><span class="toc-num">02</span>Perfect BUTc</a>
+      <a href="#m3"><span class="toc-num">03</span>The loss curve</a>
+      <a href="#m4"><span class="toc-num">04</span>Cooling delivery</a>
+      <a href="#m5"><span class="toc-num">05</span>Power &amp; heat constraints</a>
+      <a href="#m6"><span class="toc-num">06</span>The optimization problem</a>
+      <a href="#m7"><span class="toc-num">07</span>Solving for the sweet spot</a>
+      <a href="#m8"><span class="toc-num">08</span>Why 13% loss beats 1%</a>
+      <a href="#m9"><span class="toc-num">09</span>Building expansion</a>
+      <a href="#m10"><span class="toc-num">10</span>Rounding &amp; solver differences</a>
+      <a href="#m11"><span class="toc-num">11</span>Constants reference</a>
+    </div>
+  </div>
+
+  <!-- ========== 01 CORE ========== -->
+  <section class="math-section" id="m1">
+    <div class="m-eyebrow">01</div>
+    <h2>The core equation</h2>
+    <p>Every choice the site makes reduces to one number: <strong>actual BUTc produced per building</strong>. Everything else is either a component of that number or a constraint on it.</p>
+    <div class="formula">
+      <span class="var">BUTc<sub>actual</sub></span> <span class="op">=</span> <span class="var">BUTc<sub>perfect</sub></span> <span class="op">×</span> <span class="op">(</span> <span class="val">1</span> <span class="op">−</span> <span class="var">Loss</span> <span class="op">)</span>
+    </div>
+    <p>Two levers move BUTc: how much you <em class="em">could</em> produce (Perfect), and how much you actually keep after inefficiency (Loss). The rest of this page is about what determines each of those.</p>
+  </section>
+
+  <!-- ========== 02 PERFECT BUTc ========== -->
+  <section class="math-section" id="m2">
+    <div class="m-eyebrow">02</div>
+    <h2>Perfect BUTc — the ceiling</h2>
+    <p>Perfect BUTc is what your GPUs would produce with zero cooling loss. It's determined entirely by <strong>what you put in your racks</strong>.</p>
+    <dl class="defbox">
+      <dt>6060 GPU</dt><dd>0.8 BUTc per GPU</dd>
+      <dt>9090 GPU</dt><dd>2.0 BUTc per GPU  <span style="color:var(--text-dim);">— 2.5× the 6060 rate</span></dd>
+      <dt>Rack capacity</dt><dd>10 GPUs</dd>
+    </dl>
+    <div class="formula">
+      <span class="var">BUTc<sub>perfect</sub></span> <span class="op">=</span> <span class="var">racks</span> <span class="op">×</span> <span class="var">10 GPUs</span> <span class="op">×</span> <span class="var">BUTc<sub>per GPU</sub></span>
+    </div>
+    <p>A rack full of 6060s tops out at <span class="em">8 BUTc</span>. A rack full of 9090s tops out at <span class="em">20 BUTc</span>. The <strong>infrastructure cost is identical</strong> — same power, same heat, same cooling. That means if you can afford 9090s, always use them: 2.5× the output for the exact same rack + AC footprint.</p>
+  </section>
+
+  <!-- ========== 03 LOSS CURVE ========== -->
+  <section class="math-section" id="m3">
+    <div class="m-eyebrow">03</div>
+    <h2>The loss curve — where diminishing returns come from</h2>
+    <p>Loss is what makes this game interesting. It's not linear — each additional AC cools a smaller share of the remaining inefficiency. The site's loss formula was <strong>fit from real in-game data</strong>:</p>
+    <div class="formula" style="font-size: 13px;">
+<span class="comment">// Original data: single 6060 rack (perfect = 8 BUTc)</span>
+<span class="var"> 2</span> Small ACs <span class="arrow">→</span> <span class="val">7.79</span> BUTc  <span class="comment">(2.6% loss)</span>
+<span class="var"> 4</span> Small ACs <span class="arrow">→</span> <span class="val">7.89</span> BUTc  <span class="comment">(1.4% loss)</span>
+<span class="var"> 8</span> Small ACs <span class="arrow">→</span> <span class="val">7.94</span> BUTc  <span class="comment">(0.7% loss)</span>
+<span class="var">22</span> Small ACs <span class="arrow">→</span> <span class="val">7.98</span> BUTc  <span class="comment">(0.25% loss)</span>
+    </div>
+    <p>Fitting a curve to those points and simplifying into raw cooling units (each AC delivers a known amount of cooling), the formula falls out cleanly:</p>
+    <div class="formula">
+      <span class="var">Loss</span> <span class="op">=</span> <span class="val">1</span> <span class="op">/</span> <span class="op">(</span> <span class="val">2</span> <span class="var">y</span> <span class="op">+</span> <span class="val">1</span> <span class="op">)</span> &nbsp;&nbsp;&nbsp;<span class="comment">where y = cooling per rack</span>
+    </div>
+
+    <div class="chart-wrap">
+      <svg viewBox="0 0 640 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Loss curve chart">
+        <!-- Grid -->
+        <g stroke="#232a3a" stroke-width="1">
+          <line x1="60" y1="40" x2="60" y2="280"/>
+          <line x1="60" y1="280" x2="620" y2="280"/>
+          <line x1="60" y1="232" x2="620" y2="232" stroke-dasharray="2,4" stroke="#1e2532"/>
+          <line x1="60" y1="184" x2="620" y2="184" stroke-dasharray="2,4" stroke="#1e2532"/>
+          <line x1="60" y1="136" x2="620" y2="136" stroke-dasharray="2,4" stroke="#1e2532"/>
+          <line x1="60" y1="88"  x2="620" y2="88"  stroke-dasharray="2,4" stroke="#1e2532"/>
+        </g>
+
+        <!-- Y-axis labels -->
+        <g font-family="JetBrains Mono" font-size="10" fill="#6b7686" text-anchor="end">
+          <text x="52" y="44">50%</text>
+          <text x="52" y="92">40%</text>
+          <text x="52" y="140">30%</text>
+          <text x="52" y="188">20%</text>
+          <text x="52" y="236">10%</text>
+          <text x="52" y="284">0%</text>
+        </g>
+
+        <!-- X-axis labels -->
+        <g font-family="JetBrains Mono" font-size="10" fill="#6b7686" text-anchor="middle">
+          <text x="60"  y="300">0</text>
+          <text x="200" y="300">5</text>
+          <text x="340" y="300">10</text>
+          <text x="480" y="300">15</text>
+          <text x="620" y="300">20</text>
+        </g>
+
+        <!-- Axis captions -->
+        <text x="340" y="322" font-family="Space Grotesk" font-size="11" fill="#a3adc2" text-anchor="middle">cooling per rack (y)</text>
+        <text x="20" y="160" font-family="Space Grotesk" font-size="11" fill="#a3adc2" transform="rotate(-90 20 160)" text-anchor="middle">loss %</text>
+
+        <!-- Curve: samples y=0.5 to 20, loss=1/(2y+1), plotted to viewBox
+             X = 60 + 28 * y     (0-20 → 60-620)
+             Y = 280 - 480 * loss  (loss 0-0.5 → 280-40) -->
+        <path d="M 74 40 L 88 120 L 102 160 L 116 184 L 130 200 L 144 211 L 154 218 L 172 227 L 200 236 L 228 243 L 256 248 L 284 252 L 340 257 L 396 261 L 480 264 L 620 268"
+              fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+        <!-- Sweet spot marker: y=3.354, loss=12.98% -->
+        <line x1="154" y1="218" x2="154" y2="280" stroke="#f97316" stroke-width="1" stroke-dasharray="3,3"/>
+        <circle cx="154" cy="218" r="5" fill="#f97316"/>
+        <circle cx="154" cy="218" r="10" fill="none" stroke="#f97316" stroke-width="1" opacity="0.4"/>
+        <g font-family="JetBrains Mono" font-size="10" fill="#f97316">
+          <text x="164" y="212">y* ≈ 3.354</text>
+          <text x="164" y="224">Loss ≈ 13%</text>
+        </g>
+      </svg>
+      <div class="chart-caption">// Loss vs cooling per rack — the ~13% sweet spot marked</div>
+    </div>
+
+    <p>Look at the shape: from 0 to ~3 cooling per rack, loss <strong>drops fast</strong>. Beyond that, the curve flattens — you're paying more and more cooling for smaller and smaller gains. That flatness is the key insight behind the sweet spot in section 07.</p>
+  </section>
+
+  <!-- ========== 04 COOLING DELIVERY ========== -->
+  <section class="math-section" id="m4">
+    <div class="m-eyebrow">04</div>
+    <h2>Cooling delivery — the two ACs</h2>
+    <p>Only two units cool the building. Their per-unit stats look different, but their <strong>efficiency ratios are identical</strong>:</p>
+    <dl class="defbox">
+      <dt>Small AC</dt><dd>9 cooling / 4 power  <span style="color:var(--text-dim);">= 2.25 cooling per power</span></dd>
+      <dt>Big AC</dt><dd>18 cooling / 8 power  <span style="color:var(--text-dim);">= 2.25 cooling per power</span></dd>
+    </dl>
+    <p>A Big AC is <strong>exactly two Small ACs in one box</strong>. Choose based on floor space and in-game price, never on efficiency — the math treats them the same.</p>
+    <div class="formula">
+      <span class="var">Cooling<sub>total</sub></span> <span class="op">=</span> <span class="val">9</span> <span class="op">×</span> <span class="var">Smalls</span> <span class="op">+</span> <span class="val">18</span> <span class="op">×</span> <span class="var">Bigs</span> <span class="op">=</span> <span class="val">2.25</span> <span class="op">×</span> <span class="var">AC power</span>
+    </div>
+    <p>All cooling from all ACs is <strong>pooled across the whole building</strong>. That's why the Loss Snapshot page takes total cooling as one number: your specific AC mix doesn't change anything, only the total does.</p>
+    <div class="formula">
+      <span class="var">y</span> <span class="op">=</span> <span class="var">Cooling<sub>total</sub></span> <span class="op">/</span> <span class="var">racks</span> &nbsp;&nbsp;&nbsp;<span class="comment">(cooling per rack, feeds the loss formula)</span>
+    </div>
+  </section>
+
+  <!-- ========== 05 POWER & HEAT ========== -->
+  <section class="math-section" id="m5">
+    <div class="m-eyebrow">05</div>
+    <h2>Power &amp; heat — the constraints</h2>
+    <p>Every unit in the building costs power. Every rack produces heat. Two hard limits.</p>
+    <dl class="defbox">
+      <dt>Rack</dt><dd>10 power drawn, 2 heat produced <span style="color:var(--text-dim);">(independent of GPU count)</span></dd>
+      <dt>Small AC</dt><dd>4 power drawn</dd>
+      <dt>Big AC</dt><dd>8 power drawn</dd>
+    </dl>
+    <div class="formula">
+<span class="comment">// Power budget (must fit under building cap)</span>
+<span class="val">10</span> <span class="var">R</span> <span class="op">+</span> <span class="val">4</span> <span class="var">S</span> <span class="op">+</span> <span class="val">8</span> <span class="var">B</span> <span class="op">≤</span> <span class="var">P<sub>max</sub></span>
+
+<span class="comment">// Heat balance (cooling must cover heat)</span>
+<span class="val">9</span> <span class="var">S</span> <span class="op">+</span> <span class="val">18</span> <span class="var">B</span> <span class="op">+</span> <span class="var">C<sub>0</sub></span> <span class="op">≥</span> <span class="val">2</span> <span class="var">R</span> <span class="op">+</span> <span class="var">H<sub>0</sub></span>
+    </div>
+    <p>C<sub>0</sub> and H<sub>0</sub> are baseline cooling and heat already present in the building from other equipment. In most cases both are zero, and at the optimum cooling naturally exceeds heat — so heat almost never binds. Power is the constraint that actually shapes the answer.</p>
+  </section>
+
+  <!-- ========== 06 OPTIMIZATION ========== -->
+  <section class="math-section" id="m6">
+    <div class="m-eyebrow">06</div>
+    <h2>The optimization problem</h2>
+    <p>Put it all together. We want to maximize actual BUTc, subject to the power and heat constraints, choosing how many racks (<span class="em">R</span>) and how much AC power (<span class="em">P<sub>ac</sub></span>) to build.</p>
+    <div class="formula">
+<span class="comment">// Maximize</span>
+<span class="var">BUTc</span> <span class="op">=</span> <span class="var">R</span> <span class="op">×</span> <span class="val">10</span> <span class="op">×</span> <span class="var">b</span> <span class="op">×</span> <span class="op">(</span> <span class="val">1</span> <span class="op">−</span> <span class="val">1</span> <span class="op">/</span> <span class="op">(</span> <span class="val">2</span> <span class="var">y</span> <span class="op">+</span> <span class="val">1</span> <span class="op">))</span>
+
+<span class="comment">// Where</span>
+<span class="var">y</span> <span class="op">=</span> <span class="op">(</span> <span class="val">2.25</span> <span class="op">×</span> <span class="var">P<sub>ac</sub></span> <span class="op">+</span> <span class="var">C<sub>0</sub></span> <span class="op">)</span> <span class="op">/</span> <span class="var">R</span>
+<span class="var">b</span> <span class="op">=</span> BUTc per GPU
+
+<span class="comment">// Subject to</span>
+<span class="val">10</span> <span class="var">R</span> <span class="op">+</span> <span class="var">P<sub>ac</sub></span> <span class="op">≤</span> <span class="var">P<sub>avail</sub></span>       <span class="comment">(power)</span>
+<span class="val">2.25</span> <span class="var">P<sub>ac</sub></span> <span class="op">+</span> <span class="var">C<sub>0</sub></span> <span class="op">≥</span> <span class="val">2</span> <span class="var">R</span> <span class="op">+</span> <span class="var">H<sub>0</sub></span>   <span class="comment">(heat)</span>
+    </div>
+    <p>Since BUTc is monotonically increasing in <span class="em">y</span> (more cooling → less loss, always), the optimizer uses all available power: <span class="em">P<sub>ac</sub> = P<sub>avail</sub> − 10R</span>. That reduces the problem to a single variable: <strong>how many racks?</strong></p>
+  </section>
+
+  <!-- ========== 07 SOLVING ========== -->
+  <section class="math-section" id="m7">
+    <div class="m-eyebrow">07</div>
+    <h2>Solving for the sweet spot</h2>
+    <p>Substitute the power constraint into the cooling equation. Define K = 2.25 P<sub>avail</sub> + C<sub>0</sub> (the total cooling budget, converted to power-equivalent units). Then:</p>
+    <div class="formula">
+      <span class="var">y</span> <span class="op">=</span> <span class="var">K</span> <span class="op">/</span> <span class="var">R</span> <span class="op">−</span> <span class="val">22.5</span>
+    </div>
+    <p>Plug into the BUTc equation and simplify. After the algebra:</p>
+    <div class="formula">
+      <span class="var">BUTc</span><span class="op">(</span><span class="var">R</span><span class="op">)</span> <span class="op">=</span> <span class="val">10</span> <span class="var">b</span> <span class="op">×</span> <span class="var">R</span> <span class="op">×</span> <span class="op">(</span> <span class="val">2</span> <span class="var">K</span> <span class="op">−</span> <span class="val">45</span> <span class="var">R</span> <span class="op">)</span> <span class="op">/</span> <span class="op">(</span> <span class="val">2</span> <span class="var">K</span> <span class="op">−</span> <span class="val">44</span> <span class="var">R</span> <span class="op">)</span>
+    </div>
+    <p>Take the derivative with respect to R, set it to zero, and after multiplying through you land on a clean quadratic:</p>
+    <div class="formula">
+      <span class="val">495</span> <span class="var">R</span><sup>2</sup> <span class="op">−</span> <span class="val">45</span> <span class="var">K</span> <span class="var">R</span> <span class="op">+</span> <span class="var">K</span><sup>2</sup> <span class="op">=</span> <span class="val">0</span>
+    </div>
+    <p>The quadratic formula gives two roots. The physically meaningful one (the other gives negative cooling):</p>
+    <div class="formula">
+      <span class="var">R*</span> <span class="op">=</span> <span class="var">K</span> <span class="op">×</span> <span class="op">(</span> <span class="val">45</span> <span class="op">−</span> <span class="val">3</span><span class="op">√</span><span class="val">5</span> <span class="op">)</span> <span class="op">/</span> <span class="val">990</span> <span class="op">≈</span> <span class="val">0.03868</span> <span class="op">×</span> <span class="var">K</span>
+    </div>
+    <p>At <span class="em">R*</span>, cooling per rack works out to:</p>
+    <div class="formula">
+      <span class="var">y*</span> <span class="op">=</span> <span class="op">√</span><span class="val">11.25</span> <span class="op">≈</span> <span class="val">3.354</span>
+      <br><span class="var">Loss*</span> <span class="op">=</span> <span class="val">1</span> <span class="op">/</span> <span class="op">(</span> <span class="val">2</span><span class="op">√</span><span class="val">11.25</span> <span class="op">+</span> <span class="val">1</span> <span class="op">)</span> <span class="op">≈</span> <span class="val">12.98%</span>
+    </div>
+    <p>Notice the constants: the sweet spot depends only on the game's fixed ratios (rack power, AC efficiency, loss curve shape). It's <span class="em">not</span> a function of how big your building is. Every building — from 100 racks to 10,000 — optimizes at the same ~3.354 cooling per rack.</p>
+  </section>
+
+  <!-- ========== 08 WHY 13% BEATS 1% ========== -->
+  <section class="math-section" id="m8">
+    <div class="m-eyebrow">08</div>
+    <h2>Why 13% loss beats 1% (when power is fixed)</h2>
+    <p>The counter-intuitive part: <strong>lower loss isn't always better</strong>. It looks like 1% loss should give more BUTc than 13% loss — 99% vs 87% output per rack. But that ignores where the cooling comes from: <span class="em">power that could've bought more racks</span>.</p>
+    <p>Concrete comparison at a 5,000 power cap:</p>
+    <div class="formula">
+<span class="comment">// Strategy A: chase 1.5% loss</span>
+<span class="val">96</span> racks <span class="op">×</span> <span class="val">10</span> pwr <span class="op">=</span> <span class="val">960</span> rack pwr
+Remaining <span class="val">4,040</span> pwr <span class="op">→</span> <span class="val">1,010</span> Smalls <span class="op">→</span> <span class="val">9,090</span> cooling
+<span class="var">y</span> <span class="op">=</span> <span class="val">94.7</span>, Loss <span class="op">=</span> <span class="val">0.5%</span>
+BUTc <span class="op">=</span> <span class="val">96</span> <span class="op">×</span> <span class="val">20</span> <span class="op">×</span> <span class="val">0.995</span> <span class="op">=</span> <span class="val">1,910</span> <span class="comment">(9090s)</span>
+
+<span class="comment">// Strategy B: embrace 13% loss</span>
+<span class="val">435</span> racks <span class="op">×</span> <span class="val">10</span> pwr <span class="op">=</span> <span class="val">4,350</span> rack pwr
+Remaining <span class="val">650</span> pwr <span class="op">→</span> <span class="val">162</span> Smalls <span class="op">→</span> <span class="val">1,458</span> cooling
+<span class="var">y</span> <span class="op">=</span> <span class="val">3.35</span>, Loss <span class="op">=</span> <span class="val">13.0%</span>
+BUTc <span class="op">=</span> <span class="val">435</span> <span class="op">×</span> <span class="val">20</span> <span class="op">×</span> <span class="val">0.87</span> <span class="op">=</span> <span class="val">7,569</span> <span class="comment">(9090s)</span>
+    </div>
+    <p>Strategy B produces <strong>4× as much BUTc</strong> despite the higher loss %. The extra 339 racks earning at 87% efficiency crush the 96 racks earning at 99.5%. Loss % is a rate, not a quantity — and rates only matter when you multiply them by the base they're operating on.</p>
+    <p><strong>The rule:</strong> chase lower loss <em class="em">only</em> when you can't add more racks (racks are the bottleneck). When power is the bottleneck — which is nearly always in this game — <strong>settle at ~13% loss and use freed power for racks</strong>.</p>
+  </section>
+
+  <!-- ========== 09 EXPANSION ========== -->
+  <section class="math-section" id="m9">
+    <div class="m-eyebrow">09</div>
+    <h2>Building expansion — when to add a second</h2>
+    <p>A common intuition trap: "my building has too many racks, the falloff must be getting bad — I should start fresh in a new building." This is wrong. The loss formula uses a <strong>ratio</strong> (cooling per rack), not a size. A building with 400 racks and 1,340 cooling has the exact same loss % as one with 40 racks and 134 cooling.</p>
+    <div class="formula">
+<span class="comment">// Two buildings at power P each = one building at 2P for BUTc output</span>
+<span class="val">2</span> <span class="op">×</span> <span class="op">(</span> BUTc at P <span class="op">)</span> <span class="op">=</span> BUTc at 2P     <span class="comment">// no penalty, no bonus</span>
+    </div>
+    <p>So the decision to expand is entirely about the <strong>power cap</strong>. Rules the site enforces:</p>
+    <ul>
+      <li><strong>Under 70% of cap:</strong> add racks + ACs inside your current building. Same efficiency as a new building, no construction cost.</li>
+      <li><strong>Near cap but suboptimal:</strong> rebuild first. Rebalancing racks/ACs at the same power draw is free BUTc.</li>
+      <li><strong>At cap and running efficient:</strong> now expand. A second building is the only way past the power ceiling.</li>
+    </ul>
+    <p>The Loss Snapshot's Panel 04 runs this check live and tells you which state you're in.</p>
+  </section>
+
+  <!-- ========== 10 ROUNDING ========== -->
+  <section class="math-section" id="m10">
+    <div class="m-eyebrow">10</div>
+    <h2>Why the two AC solvers differ by 1</h2>
+    <p>If you carry results between the AC Calculator (Solver 02) and Optimal Setup (Solver 03), you'll notice the AC counts differ by 1 for the same underlying scenario. That's intentional — they round in opposite directions because they're solving opposite questions:</p>
+    <dl class="defbox">
+      <dt>AC Calculator</dt><dd>Rounds AC counts <strong>UP</strong>. Guarantees you hit your target loss % — may slightly exceed the power cap.</dd>
+      <dt>Optimal Setup</dt><dd>Rounds AC counts <strong>DOWN</strong>. Guarantees you stay within the power budget — may miss the theoretical loss target by a tiny amount.</dd>
+    </dl>
+    <p>Because cooling can't be fractional (you either buy an AC or you don't), one of these rounding directions always applies. Pick the solver whose guarantee matches what you care about: hitting the loss target vs. staying within power. All the derived numbers (loss %, cooling per rack, actual BUTc) match between the two once the AC counts are the same.</p>
+  </section>
+
+  <!-- ========== 11 CONSTANTS ========== -->
+  <section class="math-section" id="m11">
+    <div class="m-eyebrow">11</div>
+    <h2>Constants reference</h2>
+    <p>Everything the site treats as fixed. Pulled from in-game observation — if the game updates any of these, the calculators will need to be updated too.</p>
+    <table class="const-table">
+      <thead>
+        <tr><th>Unit</th><th>Cooling</th><th>Power</th><th>Heat</th><th>BUTc</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Rack (empty shell)</td><td class="dim">—</td><td><span class="accent-num">10</span></td><td><span class="accent-num">2</span></td><td class="dim">—</td></tr>
+        <tr><td>Small AC</td><td>+<span class="accent-num">9</span></td><td><span class="accent-num">4</span></td><td class="dim">—</td><td class="dim">—</td></tr>
+        <tr><td>Big AC</td><td>+<span class="accent-num">18</span></td><td><span class="accent-num">8</span></td><td class="dim">—</td><td class="dim">—</td></tr>
+        <tr><td>6060 GPU</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td><span class="accent-num">0.8</span></td></tr>
+        <tr><td>9090 GPU</td><td class="dim">—</td><td class="dim">—</td><td class="dim">—</td><td><span class="accent-num">2.0</span></td></tr>
+      </tbody>
+    </table>
+    <table class="const-table" style="margin-top: 20px;">
+      <thead>
+        <tr><th>Derived quantity</th><th>Value</th><th>Origin</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight"><td>Optimal cooling per rack</td><td><span class="accent-num">√11.25 ≈ 3.354</span></td><td>Derivative of BUTc(R), section 07</td></tr>
+        <tr class="highlight"><td>Optimal loss %</td><td><span class="accent-num">12.98%</span></td><td>1 / (2√11.25 + 1)</td></tr>
+        <tr><td>AC efficiency ratio</td><td><span class="accent-num">2.25</span> cooling/power</td><td>Same for Small and Big</td></tr>
+        <tr><td>Optimal rack coefficient</td><td><span class="accent-num">(45 − 3√5)/990</span></td><td>≈ 0.03868 — multiplies K to get R*</td></tr>
+        <tr><td>Power per "rack + its cooling"</td><td><span class="accent-num">≈ 11.49</span> power</td><td>10 (rack) + 3.354/2.25 (its share of AC power)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
 </main>
 
 <footer>
-  <span>#FridgeFacctor // Made by Jack G. </span>
+  <span>BUTc // datacenter optimizer</span>
   <span>Loss % = 1 / (2 × cooling per rack + 1)</span>
 </footer>
 
@@ -963,16 +1499,14 @@ function markerPos(loss) {
 function computeLoss() {
   const racks = Math.max(0, +document.getElementById('l-racks').value || 0);
   const perfect = Math.max(0, +document.getElementById('l-perfect').value || 0);
-  const smalls = Math.max(0, +document.getElementById('l-small').value || 0);
-  const bigs = Math.max(0, +document.getElementById('l-big').value || 0);
+  const cooling = Math.max(0, +document.getElementById('l-cool-in').value || 0);
 
-  const cooling = smalls * AC_SMALL.cool + bigs * AC_BIG.cool;
   const cPerRack = racks > 0 ? cooling / racks : 0;
   const loss = racks > 0 ? 1 / (2 * cPerRack + 1) : 1;
   const actBUTc = perfect * (1 - loss);
   const lostBUTc = perfect - actBUTc;
   const rackPow = racks * RACK_POWER;
-  const acPow = smalls * AC_SMALL.power + bigs * AC_BIG.power;
+  const acPow = cooling / 2.25;  // both AC types deliver exactly 2.25 cooling per power
   const sysPow = rackPow + acPow;
   const heat = racks * RACK_HEAT;
   const covers = cooling >= heat;
@@ -999,7 +1533,7 @@ function computeLoss() {
 
   // Advisory callout — compare against 13% sweet spot
   const callout = document.getElementById('l-callout');
-  if (racks === 0 || (smalls + bigs) === 0) {
+  if (racks === 0 || cooling === 0) {
     callout.className = 'callout';
     callout.innerHTML = `<strong>Fill in your deployed fleet</strong> to see how it's performing.`;
   } else if (loss > 0.20) {
@@ -1017,6 +1551,64 @@ function computeLoss() {
   } else {
     callout.className = 'callout good';
     callout.innerHTML = `<strong>Near-perfect cooling.</strong> Loss under 2%. Only worth it if you can't add more racks — otherwise you're leaving BUTc on the table.`;
+  }
+
+  // ---------- Expansion analysis ----------
+  const cap = Math.max(0, +document.getElementById('l-cap').value || 0);
+  const fillEl = document.getElementById('l-cap-fill');
+  const lblEl  = document.getElementById('l-cap-lbl');
+  const maxEl  = document.getElementById('l-cap-max');
+  const hdrEl  = document.getElementById('l-cap-headroom');
+  const expCallout = document.getElementById('l-cap-callout');
+
+  if (cap <= 0) {
+    fillEl.style.width = '0%';
+    fillEl.className = 'capacity-fill';
+    lblEl.innerHTML = '<span class="pct">Set a limit above</span>';
+    maxEl.textContent = '—';
+    hdrEl.textContent = '—';
+    expCallout.className = 'callout';
+    expCallout.innerHTML = `<strong>Enter your building's power limit</strong> to check whether it's time to expand — and to clear up a common misconception: <em>loss falloff doesn't get worse just because a building has more racks.</em> It only spikes when you're pinned against the power cap and cooling gets starved. Two buildings at power P each ≈ one building at power 2P for BUTc output.`;
+    return;
+  }
+
+  const usedPct = Math.min(1, sysPow / cap);
+  const perRackBUTc = racks > 0 ? perfect / racks : 8;
+  const optRacksAtCap = 2.25 * cap * SQRT_LEAK / 990;
+  const optBUTcAtCap = optRacksAtCap * perRackBUTc * (1 - OPT_LOSS);
+  const growthPotential = optBUTcAtCap - actBUTc;
+
+  // Bar visual
+  fillEl.style.width = (usedPct * 100).toFixed(1) + '%';
+  fillEl.className = 'capacity-fill' + (usedPct >= 0.9 ? ' hot' : usedPct >= 0.7 ? ' warn' : '');
+  lblEl.innerHTML = `<span class="mono">${fmt0(sysPow)} / ${fmt0(cap)} pwr</span><span class="pct">${(usedPct*100).toFixed(1)}% used</span>`;
+
+  maxEl.textContent = fmt1(optBUTcAtCap) + ' BUTc';
+  hdrEl.textContent = fmtSigned(growthPotential) + ' BUTc';
+  hdrEl.style.color = growthPotential > 100 ? 'var(--accent)' :
+                      growthPotential > 0 ? 'var(--text-primary)' :
+                      'var(--green)';
+
+  // Recommendation
+  const optBUTcAtCurPow = (2.25 * sysPow * SQRT_LEAK / 990) * perRackBUTc * (1 - OPT_LOSS);
+  const rebuildGain = optBUTcAtCurPow - actBUTc;
+  const efficient = actBUTc >= optBUTcAtCurPow * 0.95;
+
+  if (usedPct < 0.7) {
+    expCallout.className = 'callout';
+    expCallout.innerHTML = `<strong>Room to grow inside this building.</strong> You're using ${(usedPct*100).toFixed(0)}% of your power cap — filling it to ~13% loss would produce <strong>${fmt0(optBUTcAtCap)} BUTc</strong>. Adding racks + ACs here is just as efficient as a new building, without the construction cost. <em>Loss doesn't get worse from a bigger building — only from being power-starved.</em>`;
+  } else if (usedPct < 0.9 && !efficient) {
+    expCallout.className = 'callout warn';
+    expCallout.innerHTML = `<strong>Rebuild before expanding.</strong> You're at ${(usedPct*100).toFixed(0)}% of cap but running ${((actBUTc/optBUTcAtCurPow)*100).toFixed(0)}% of what's possible at this power. Rebalancing racks/ACs would gain <strong>+${fmt0(rebuildGain)} BUTc</strong> from the same power. Then top up to the cap for <strong>${fmt0(optBUTcAtCap)} BUTc total</strong>.`;
+  } else if (usedPct < 0.9) {
+    expCallout.className = 'callout';
+    expCallout.innerHTML = `<strong>Close to cap, running efficiently.</strong> ${fmt0(cap - sysPow)} power left. Fill to the cap for <strong>+${fmt0(optBUTcAtCap - actBUTc)} BUTc</strong>, then start planning building #2.`;
+  } else if (!efficient) {
+    expCallout.className = 'callout warn';
+    expCallout.innerHTML = `<strong>Maxed out but under-performing.</strong> Rebuild this building first — swapping ACs for racks (or vice versa) could gain <strong>+${fmt0(rebuildGain)} BUTc</strong> from the exact same power draw. Then a second building is the only way to grow further.`;
+  } else {
+    expCallout.className = 'callout good';
+    expCallout.innerHTML = `<strong>This building is done — expand.</strong> Maxed and optimized. A second building gives you the same ~13% efficiency there. <em>Two buildings at cap ≈ one hypothetical building at 2× cap for BUTc output.</em> The only reason to expand is the power ceiling.`;
   }
 }
 
@@ -1229,7 +1821,7 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-['l-racks','l-perfect','l-small','l-big'].forEach(id =>
+['l-racks','l-perfect','l-cool-in','l-cap'].forEach(id =>
   document.getElementById(id).addEventListener('input', computeLoss));
 ['c-racks','c-perfect','c-target','c-cap'].forEach(id =>
   document.getElementById(id).addEventListener('input', computeCalc));
