@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUTc // Datacenter Optimizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a0d12;
+  --bg-panel: #10141c;
+  --bg-card: #161b26;
+  --bg-elev: #1e2432;
+  --bg-input: #0d1017;
+  --border: #232a3a;
+  --border-strong: #2f3849;
+
+  --text-primary: #e5e9f0;
+  --text-secondary: #a3adc2;
+  --text-muted: #6b7686;
+  --text-dim: #4a5262;
+
+  --accent: #22d3ee;
+  --accent-glow: rgba(34, 211, 238, 0.15);
+  --amber: #fbbf24;
+  --amber-bg: rgba(251, 191, 36, 0.08);
+  --green: #22c55e;
+  --red: #ef4444;
+
+  --thermal-cold: #3b82f6;
+  --thermal-cool: #22d3ee;
+  --thermal-mild: #22c55e;
+  --thermal-warm: #eab308;
+  --thermal-hot:  #f97316;
+  --thermal-crit: #ef4444;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 0%, rgba(34, 211, 238, 0.04), transparent),
+    radial-gradient(ellipse 60% 80% at 100% 100%, rgba(59, 130, 246, 0.03), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-feature-settings: 'tnum' 1, 'ss01' 1;
+}
+
+/* === NAV === */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(10, 13, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.brand-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.brand-label { color: var(--text-primary); }
+.brand-sub { color: var(--text-muted); font-weight: 400; }
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px;
+}
+.tab {
+  padding: 8px 16px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.01em;
+}
+.tab:hover { color: var(--text-primary); }
+.tab.active {
+  background: var(--bg-elev);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+}
+
+/* === PAGE === */
+main {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 56px 32px 96px;
+  z-index: 1;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.title span { color: var(--text-muted); }
+
+.lede {
+  color: var(--text-secondary);
+  font-size: 16px;
+  max-width: 560px;
+  margin-bottom: 40px;
+}
+
+/* === HERO ANSWER CARD === */
+.hero {
+  background: linear-gradient(180deg, var(--bg-card), var(--bg-panel));
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.5;
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.hero-answer {
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 24px;
+}
+.hero-answer .num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--accent);
+}
+.hero-answer .conj {
+  color: var(--text-muted);
+  font-size: 22px;
+  margin: 0 12px;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 32px;
+  align-items: center;
+}
+
+.thermal-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 240px;
+}
+.thermal-track {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg,
+    var(--thermal-cold) 0%,
+    var(--thermal-cool) 15%,
+    var(--thermal-mild) 35%,
+    var(--thermal-warm) 55%,
+    var(--thermal-hot) 75%,
+    var(--thermal-crit) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+.thermal-marker {
+  position: absolute;
+  top: -4px;
+  width: 4px;
+  height: 16px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(255,255,255,0.6);
+  transition: left 0.3s ease-out;
+}
+.thermal-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hero-stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.hero-stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.hero-stat-value.accent { color: var(--accent); }
+.hero-stat-value.warm { color: var(--thermal-warm); }
+.hero-stat-value.hot { color: var(--thermal-hot); }
+
+/* === PANELS === */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 20px 24px 4px;
+}
+.panel-header .num-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+.panel-header h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.panel-header .sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-left: auto;
+  font-weight: 400;
+}
+
+.panel-body {
+  padding: 12px 24px 20px;
+}
+
+/* === INPUTS === */
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  padding: 12px 0 4px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.field-label .hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.field-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--amber);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  width: 100%;
+}
+.field-input:focus {
+  outline: none;
+  border-color: var(--amber);
+  background: var(--amber-bg);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
+}
+.field-input::-webkit-outer-spin-button,
+.field-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.field-input[type=number] { -moz-appearance: textfield; }
+
+/* === RESULT ROWS === */
+.result-list {
+  display: flex;
+  flex-direction: column;
+}
+.result-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.result-row:first-child { border-top: none; }
+.result-row .lbl {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.result-row .lbl.strong {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.result-row .val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: right;
+}
+.result-row.emphasize { padding: 16px 0; }
+.result-row.emphasize .val {
+  font-size: 18px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.result-row.subtle .val {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* === TABLE === */
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.tbl thead th {
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.tbl thead th:last-child { text-align: right; }
+.tbl tbody tr {
+  transition: background 0.1s ease;
+}
+.tbl tbody tr:hover { background: var(--bg-elev); }
+.tbl tbody td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+.tbl tbody td:first-child {
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.tbl tbody td.chip { color: var(--accent); font-weight: 500; }
+.tbl tbody td.right { text-align: right; }
+.tbl tbody tr:last-child td { border-bottom: none; }
+.tbl tbody tr.over td { color: var(--red); }
+.tbl tbody tr.over td:first-child { color: var(--red); }
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.status-chip.ok {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--green);
+}
+.status-chip.bad {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--red);
+}
+.status-chip.neutral {
+  background: var(--bg-elev);
+  color: var(--text-muted);
+}
+
+/* === CALLOUT === */
+.callout {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-top: 16px;
+}
+.callout strong { color: var(--text-primary); font-weight: 600; }
+.callout.warn { border-left-color: var(--amber); }
+.callout.good { border-left-color: var(--green); }
+
+/* === DETAILS === */
+details {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+details summary {
+  cursor: pointer;
+  padding: 8px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before {
+  content: '›';
+  color: var(--text-dim);
+  font-size: 16px;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+details[open] summary::before { transform: rotate(90deg); }
+details summary:hover { color: var(--text-secondary); }
+
+/* === FOOTER === */
+footer {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 32px 32px 48px;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+footer a { color: var(--text-muted); text-decoration: none; }
+footer a:hover { color: var(--accent); }
+
+/* === RESPONSIVE === */
+@media (max-width: 720px) {
+  .nav-inner { padding: 16px 20px; flex-direction: column; align-items: stretch; gap: 12px; }
+  main { padding: 32px 20px 64px; }
+  .title { font-size: 32px; }
+  .hero { padding: 24px 20px; }
+  .hero-answer { font-size: 24px; }
+  .hero-answer .conj { display: block; margin: 4px 0; font-size: 14px; }
+  .hero-stats { grid-template-columns: 1fr; gap: 20px; }
+  .thermal-gauge { min-width: 0; }
+  .input-grid { grid-template-columns: 1fr; }
+  .panel-body { padding: 12px 16px 16px; }
+  .panel-header { padding: 16px 16px 4px; }
+  .tbl { font-size: 12px; }
+  .tbl thead th { padding: 10px 8px 6px; font-size: 9px; }
+  .tbl tbody td { padding: 12px 8px; font-size: 13px; }
+  footer { padding: 24px 20px 32px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-label">BUTc</span>
+      <span class="brand-sub">// datacenter optimizer</span>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="loss" role="tab">Loss Snapshot</button>
+      <button class="tab" data-tab="calc" role="tab">AC Calculator</button>
+      <button class="tab" data-tab="opt" role="tab">Optimal Setup</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- ============= PAGE 1: LOSS SNAPSHOT ============= -->
+<div class="page active" id="page-loss">
+
+  <div class="eyebrow">Solver 01 · Current state</div>
+  <h1 class="title">What's my loss<br><span>right now?</span></h1>
+  <p class="lede">Enter what you actually have deployed — racks, ACs, GPU count — and see live loss %, BUTc output, and whether cooling is keeping up with heat.</p>
+
+  <div class="hero">
+    <div class="hero-label">// Snapshot</div>
+    <div class="hero-answer" id="loss-answer">—</div>
+    <div class="hero-stats">
+      <div class="thermal-gauge">
+        <div class="thermal-track">
+          <div class="thermal-marker" id="loss-marker" style="left: 0%"></div>
+        </div>
+        <div class="thermal-labels">
+          <span>0%</span><span>5%</span><span>10%</span><span>15%</span><span>20%</span><span>25%+</span>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-label">Cooling / rack</span>
+        <span class="hero-stat-value" id="loss-yrack">—</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-label">Actual BUTc</span>
+        <span class="hero-stat-value accent" id="loss-butc">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">01</span>
+      <h2>Deployed fleet</h2>
+      <span class="sub">what you have on the ground</span>
+    </div>
+    <div class="panel-body">
+      <div class="input-grid">
+        <div class="field">
+          <label class="field-label" for="l-racks">Number of racks</label>
+          <input class="field-input mono" type="number" id="l-racks" value="178" min="0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="l-perfect">Perfect BUTc <span class="hint">max possible</span></label>
+          <input class="field-input mono" type="number" id="l-perfect" value="1424" min="0" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field-label" for="l-small">Small ACs deployed</label>
+          <input class="field-input mono" type="number" id="l-small" value="262" min="0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="l-big">Big ACs deployed</label>
+          <input class="field-input mono" type="number" id="l-big" value="0" min="0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">02</span>
+      <h2>Cooling & loss</h2>
+    </div>
+    <div class="panel-body">
+      <div class="result-list">
+        <div class="result-row"><span class="lbl">Total cooling delivered</span><span class="val mono" id="l-cool">—</span></div>
+        <div class="result-row"><span class="lbl">Cooling per rack</span><span class="val mono" id="l-cprack">—</span></div>
+        <div class="result-row emphasize"><span class="lbl strong">Actual loss %</span><span class="val mono" id="l-lossp">—</span></div>
+        <div class="result-row"><span class="lbl">BUTc lost to inefficiency</span><span class="val mono" id="l-lost">—</span></div>
+        <div class="result-row emphasize"><span class="lbl strong">Actual BUTc produced</span><span class="val mono" id="l-actbutc">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">03</span>
+      <h2>Power & heat balance</h2>
+    </div>
+    <div class="panel-body">
+      <div class="result-list">
+        <div class="result-row subtle"><span class="lbl">Rack power draw</span><span class="val mono" id="l-rackpow">—</span></div>
+        <div class="result-row subtle"><span class="lbl">AC power draw</span><span class="val mono" id="l-acpow">—</span></div>
+        <div class="result-row"><span class="lbl">Total system power</span><span class="val mono" id="l-syspow">—</span></div>
+        <div class="result-row subtle"><span class="lbl">Total heat generated</span><span class="val mono" id="l-heat">—</span></div>
+        <div class="result-row"><span class="lbl">Cooling covers heat?</span><span class="val" id="l-covers">—</span></div>
+      </div>
+      <div class="callout" id="l-callout"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============= PAGE 2: AC CALCULATOR ============= -->
+<div class="page" id="page-calc">
+
+  <div class="eyebrow">Solver 02 · Fixed racks</div>
+  <h1 class="title">How many ACs<br><span>for a target loss %?</span></h1>
+  <p class="lede">You've already placed your racks. Enter your fleet, pick a loss target, and get the exact AC count to buy.</p>
+
+  <div class="hero">
+    <div class="hero-label">// Recommendation</div>
+    <div class="hero-answer" id="calc-answer">—</div>
+    <div class="hero-stats">
+      <div class="thermal-gauge">
+        <div class="thermal-track">
+          <div class="thermal-marker" id="calc-marker" style="left: 0%"></div>
+        </div>
+        <div class="thermal-labels">
+          <span>0%</span><span>5%</span><span>10%</span><span>15%</span><span>20%</span><span>25%+</span>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-label">Actual loss</span>
+        <span class="hero-stat-value" id="calc-loss">—</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-label">Actual BUTc</span>
+        <span class="hero-stat-value accent" id="calc-butc">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">01</span>
+      <h2>Fleet inputs</h2>
+      <span class="sub">edit any field · live update</span>
+    </div>
+    <div class="panel-body">
+      <div class="input-grid">
+        <div class="field">
+          <label class="field-label" for="c-racks">Number of racks</label>
+          <input class="field-input mono" type="number" id="c-racks" value="178" min="0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="c-perfect">Perfect BUTc <span class="hint">max possible</span></label>
+          <input class="field-input mono" type="number" id="c-perfect" value="1424" min="0" step="0.1">
+        </div>
+        <div class="field">
+          <label class="field-label" for="c-target">Target max loss % <span class="hint">e.g. 1.5</span></label>
+          <input class="field-input mono" type="number" id="c-target" value="1.5" min="0.01" step="0.01">
+        </div>
+        <div class="field">
+          <label class="field-label" for="c-cap">Power cap <span class="hint">0 = no limit</span></label>
+          <input class="field-input mono" type="number" id="c-cap" value="0" min="0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">02</span>
+      <h2>Cooling & power breakdown</h2>
+    </div>
+    <div class="panel-body">
+      <div class="result-list">
+        <div class="result-row"><span class="lbl">Required cooling per rack</span><span class="val mono" id="c-r-per-rack">—</span></div>
+        <div class="result-row"><span class="lbl">Total cooling needed</span><span class="val mono" id="c-r-total-c">—</span></div>
+        <div class="result-row emphasize"><span class="lbl strong">Actual BUTc after loss</span><span class="val mono" id="c-r-butc">—</span></div>
+        <div class="result-row subtle"><span class="lbl">Rack power draw</span><span class="val mono" id="c-r-rackpow">—</span></div>
+        <div class="result-row subtle"><span class="lbl">Power budget for ACs</span><span class="val mono" id="c-r-acpow">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">03</span>
+      <h2>AC options</h2>
+      <span class="sub">both types = same efficiency, pick by price / space</span>
+    </div>
+    <div class="panel-body">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Small</th>
+            <th>Big</th>
+            <th>System power</th>
+            <th>Actual loss</th>
+            <th class="right">Fits cap?</th>
+          </tr>
+        </thead>
+        <tbody id="c-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">04</span>
+      <h2>Optimality check</h2>
+      <span class="sub">is this rack count the sweet spot?</span>
+    </div>
+    <div class="panel-body">
+      <div class="result-list">
+        <div class="result-row"><span class="lbl">Total system power committed</span><span class="val mono" id="s-syspow">—</span></div>
+        <div class="result-row"><span class="lbl">Optimal rack count at this power</span><span class="val mono" id="s-optracks">—</span></div>
+        <div class="result-row"><span class="lbl">Mathematical sweet spot loss</span><span class="val mono" id="s-optloss">—</span></div>
+        <div class="result-row emphasize"><span class="lbl strong">Optimal BUTc at same power</span><span class="val mono" id="s-optbutc">—</span></div>
+        <div class="result-row"><span class="lbl">Your current BUTc</span><span class="val mono" id="s-curbutc">—</span></div>
+        <div class="result-row emphasize"><span class="lbl strong">Δ (optimal − current)</span><span class="val mono" id="s-delta">—</span></div>
+      </div>
+      <div class="callout" id="s-callout"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============= PAGE 3: OPTIMAL SETUP ============= -->
+<div class="page" id="page-opt">
+
+  <div class="eyebrow">Solver 03 · From scratch</div>
+  <h1 class="title">Max BUTc<br><span>from a power budget</span></h1>
+  <p class="lede">Starting from zero. Enter what the building supports and what's already running — get the ideal rack + AC combination.</p>
+
+  <div class="hero">
+    <div class="hero-label">// Blueprint</div>
+    <div class="hero-answer" id="opt-answer">—</div>
+    <div class="hero-stats">
+      <div class="thermal-gauge">
+        <div class="thermal-track">
+          <div class="thermal-marker" id="opt-marker" style="left: 0%"></div>
+        </div>
+        <div class="thermal-labels">
+          <span>0%</span><span>5%</span><span>10%</span><span>15%</span><span>20%</span><span>25%+</span>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-label">Optimal loss</span>
+        <span class="hero-stat-value warm" id="opt-loss">—</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-label">Actual BUTc / 9090s</span>
+        <span class="hero-stat-value accent" id="opt-butc">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">01</span>
+      <h2>Building constraints</h2>
+      <span class="sub">baseline usage = other equipment already running</span>
+    </div>
+    <div class="panel-body">
+      <div class="input-grid">
+        <div class="field">
+          <label class="field-label" for="o-maxpow">Max power limit <span class="hint">building cap</span></label>
+          <input class="field-input mono" type="number" id="o-maxpow" value="5000" min="0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="o-curpow">Baseline power draw <span class="hint">already used</span></label>
+          <input class="field-input mono" type="number" id="o-curpow" value="0" min="0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="o-curcool">Baseline cooling <span class="hint">already available</span></label>
+          <input class="field-input mono" type="number" id="o-curcool" value="0" min="0">
+        </div>
+        <div class="field">
+          <label class="field-label" for="o-curheat">Baseline heat <span class="hint">already present</span></label>
+          <input class="field-input mono" type="number" id="o-curheat" value="0" min="0">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">02</span>
+      <h2>Optimal result</h2>
+      <span class="sub">what to actually build</span>
+    </div>
+    <div class="panel-body">
+      <div class="result-list">
+        <div class="result-row emphasize"><span class="lbl strong">Racks to build</span><span class="val mono" id="o-racks">—</span></div>
+        <div class="result-row subtle"><span class="lbl">Power used by racks</span><span class="val mono" id="o-rackpow">—</span></div>
+        <div class="result-row subtle"><span class="lbl">AC power budget</span><span class="val mono" id="o-acbudget">—</span></div>
+        <div class="result-row subtle"><span class="lbl">AC power actually used <span style="color:var(--text-dim)">(after rounding)</span></span><span class="val mono" id="o-acused">—</span></div>
+        <div class="result-row"><span class="lbl">Total system power</span><span class="val mono" id="o-syspow">—</span></div>
+        <div class="result-row"><span class="lbl">Total cooling delivered</span><span class="val mono" id="o-cool">—</span></div>
+        <div class="result-row"><span class="lbl">Cooling per rack</span><span class="val mono" id="o-cprack">—</span></div>
+        <div class="result-row"><span class="lbl">Loss %</span><span class="val mono" id="o-lossp">—</span></div>
+        <div class="result-row"><span class="lbl">Perfect BUTc — 6060 GPUs</span><span class="val mono" id="o-perf60">—</span></div>
+        <div class="result-row emphasize"><span class="lbl strong">Actual BUTc — 6060 GPUs</span><span class="val mono" id="o-act60">—</span></div>
+        <div class="result-row"><span class="lbl">Perfect BUTc — 9090 GPUs</span><span class="val mono" id="o-perf90">—</span></div>
+        <div class="result-row emphasize"><span class="lbl strong">Actual BUTc — 9090 GPUs</span><span class="val mono" id="o-act90">—</span></div>
+        <div class="result-row subtle"><span class="lbl">Total heat generated</span><span class="val mono" id="o-heat">—</span></div>
+        <div class="result-row"><span class="lbl">Cooling covers heat?</span><span class="val" id="o-covers">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">03</span>
+      <h2>AC breakdown</h2>
+      <span class="sub">how to spend the AC power budget</span>
+    </div>
+    <div class="panel-body">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Small</th>
+            <th>Big</th>
+            <th>AC power</th>
+            <th>C / rack</th>
+            <th class="right">Actual loss</th>
+          </tr>
+        </thead>
+        <tbody id="o-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="num-badge">04</span>
+      <h2>The math</h2>
+      <span class="sub">for the curious</span>
+    </div>
+    <div class="panel-body">
+      <div class="result-list">
+        <div class="result-row subtle"><span class="lbl">Available power (limit − baseline)</span><span class="val mono" id="m-pavail">—</span></div>
+        <div class="result-row subtle"><span class="lbl">K = 2.25 × P<sub>avail</sub> + C₀</span><span class="val mono" id="m-K">—</span></div>
+        <div class="result-row subtle"><span class="lbl">R optimal (continuous)</span><span class="val mono" id="m-Ropt">—</span></div>
+        <div class="result-row subtle"><span class="lbl">R max under heat constraint</span><span class="val mono" id="m-Rheat">—</span></div>
+        <div class="result-row subtle"><span class="lbl">R max under power constraint</span><span class="val mono" id="m-Rpwr">—</span></div>
+      </div>
+      <div class="callout" style="margin-top:20px;">
+        <strong>Why 13% loss is actually optimal.</strong> The sweet spot is ~3.354 cooling per rack. Below that, loss climbs fast; above it, extra cooling costs more power than you'd earn back — that power buys more racks instead. The math: solve <span class="mono" style="color:var(--accent)">d/dR [R(2K − 45R)/(2K − 44R)] = 0</span>.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</main>
+
+<footer>
+  <span>BUTc // datacenter optimizer</span>
+  <span>Loss % = 1 / (2 × cooling per rack + 1)</span>
+</footer>
+
+<script>
+// ============================================================
+// MATH CORE
+// ============================================================
+const AC_SMALL = { cool: 9, power: 4 };
+const AC_BIG   = { cool: 18, power: 8 };
+const RACK_POWER = 10;
+const RACK_HEAT = 2;
+const SQRT_LEAK = 45 - 3 * Math.sqrt(5);  // ≈ 38.29, used in R_opt formula
+const OPT_Y = Math.sqrt(11.25);           // ≈ 3.354 cooling/rack sweet spot
+const OPT_LOSS = 1 / (2 * OPT_Y + 1);     // ≈ 12.98%
+
+const fmt0 = n => Number.isFinite(n) ? Math.round(n).toLocaleString() : '—';
+const fmt1 = n => Number.isFinite(n) ? n.toLocaleString(undefined, {minimumFractionDigits:1, maximumFractionDigits:1}) : '—';
+const fmt2 = n => Number.isFinite(n) ? n.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : '—';
+const fmtPct = n => Number.isFinite(n) ? (n * 100).toFixed(2) + '%' : '—';
+const fmtSigned = n => Number.isFinite(n) ? (n >= 0 ? '+' : '') + n.toLocaleString(undefined, {maximumFractionDigits:0}) : '—';
+
+// Thermal marker position (0-25% maps to 0-100%)
+function markerPos(loss) {
+  if (!Number.isFinite(loss)) return 0;
+  return Math.min(100, Math.max(0, (loss / 0.25) * 100));
+}
+
+// ============================================================
+// PAGE 1: LOSS SNAPSHOT
+// ============================================================
+function computeLoss() {
+  const racks = Math.max(0, +document.getElementById('l-racks').value || 0);
+  const perfect = Math.max(0, +document.getElementById('l-perfect').value || 0);
+  const smalls = Math.max(0, +document.getElementById('l-small').value || 0);
+  const bigs = Math.max(0, +document.getElementById('l-big').value || 0);
+
+  const cooling = smalls * AC_SMALL.cool + bigs * AC_BIG.cool;
+  const cPerRack = racks > 0 ? cooling / racks : 0;
+  const loss = racks > 0 ? 1 / (2 * cPerRack + 1) : 1;
+  const actBUTc = perfect * (1 - loss);
+  const lostBUTc = perfect - actBUTc;
+  const rackPow = racks * RACK_POWER;
+  const acPow = smalls * AC_SMALL.power + bigs * AC_BIG.power;
+  const sysPow = rackPow + acPow;
+  const heat = racks * RACK_HEAT;
+  const covers = cooling >= heat;
+
+  document.getElementById('loss-answer').innerHTML =
+    `<span class="num">${fmtPct(loss)}</span> loss`;
+  document.getElementById('loss-yrack').textContent = fmt2(cPerRack);
+  document.getElementById('loss-butc').textContent = fmt0(actBUTc);
+  document.getElementById('loss-marker').style.left = markerPos(loss) + '%';
+
+  document.getElementById('l-cool').textContent = fmt0(cooling);
+  document.getElementById('l-cprack').textContent = fmt2(cPerRack);
+  document.getElementById('l-lossp').textContent = fmtPct(loss);
+  document.getElementById('l-lost').textContent = fmt1(lostBUTc) + ' BUTc';
+  document.getElementById('l-actbutc').textContent = fmt1(actBUTc);
+
+  document.getElementById('l-rackpow').textContent = fmt0(rackPow) + ' pwr';
+  document.getElementById('l-acpow').textContent = fmt0(acPow) + ' pwr';
+  document.getElementById('l-syspow').textContent = fmt0(sysPow) + ' pwr';
+  document.getElementById('l-heat').textContent = fmt0(heat);
+  document.getElementById('l-covers').innerHTML = covers ?
+    `<span class="status-chip ok">✓ YES</span>` :
+    `<span class="status-chip bad">✗ SHORT</span>`;
+
+  // Advisory callout — compare against 13% sweet spot
+  const callout = document.getElementById('l-callout');
+  if (racks === 0 || (smalls + bigs) === 0) {
+    callout.className = 'callout';
+    callout.innerHTML = `<strong>Fill in your deployed fleet</strong> to see how it's performing.`;
+  } else if (loss > 0.20) {
+    callout.className = 'callout warn';
+    callout.innerHTML = `<strong>You're under-cooled.</strong> Loss above 20% means cooling can barely keep up. Add ACs to move down the thermal band.`;
+  } else if (loss > OPT_LOSS + 0.02) {
+    callout.className = 'callout warn';
+    callout.innerHTML = `<strong>Room to cool more.</strong> Loss sits above the ~13% sweet spot — adding cooling would meaningfully increase BUTc if you have the power budget.`;
+  } else if (loss > OPT_LOSS - 0.02) {
+    callout.className = 'callout good';
+    callout.innerHTML = `<strong>Right at the sweet spot (~13%).</strong> If power is your bottleneck, this is where BUTc-per-power peaks. If racks are fixed, you could still gain by cooling more.`;
+  } else if (loss > 0.02) {
+    callout.className = 'callout';
+    callout.innerHTML = `<strong>Well-cooled setup.</strong> You're under 5% loss. Great if racks are your bottleneck; otherwise those extra ACs might be better spent on more racks (see Optimal Setup).`;
+  } else {
+    callout.className = 'callout good';
+    callout.innerHTML = `<strong>Near-perfect cooling.</strong> Loss under 2%. Only worth it if you can't add more racks — otherwise you're leaving BUTc on the table.`;
+  }
+}
+
+// ============================================================
+// PAGE 2: AC CALCULATOR
+// ============================================================
+function computeCalc() {
+  const racks = Math.max(0, +document.getElementById('c-racks').value || 0);
+  const perfect = Math.max(0, +document.getElementById('c-perfect').value || 0);
+  const targetPct = Math.max(0.01, +document.getElementById('c-target').value || 1.5);
+  const cap = Math.max(0, +document.getElementById('c-cap').value || 0);
+  const target = targetPct / 100;
+
+  // Required cooling per rack to hit target loss
+  const reqPerRack = (1/target - 1) / 2;
+  const totalCoolNeeded = reqPerRack * racks;
+  const actualBUTc = perfect * (1 - target);
+  const rackPow = racks * RACK_POWER;
+  const acPowBudget = cap > 0 ? Math.max(0, cap - rackPow) : Infinity;
+
+  // AC options — round UP to guarantee target loss
+  const options = [
+    {
+      name: 'All Small ACs',
+      small: Math.ceil(totalCoolNeeded / AC_SMALL.cool),
+      big: 0,
+    },
+    {
+      name: 'All Big ACs',
+      small: 0,
+      big: Math.ceil(totalCoolNeeded / AC_BIG.cool),
+    },
+    {
+      name: 'Mixed  ·  Bigs + top-up Smalls',
+      big: Math.floor(totalCoolNeeded / AC_BIG.cool),
+      small: 0,
+    },
+  ];
+  // finish mixed
+  options[2].small = Math.max(0, Math.ceil((totalCoolNeeded - options[2].big * AC_BIG.cool) / AC_SMALL.cool));
+
+  options.forEach(o => {
+    o.acPower = o.small * AC_SMALL.power + o.big * AC_BIG.power;
+    o.sysPower = rackPow + o.acPower;
+    o.cooling = o.small * AC_SMALL.cool + o.big * AC_BIG.cool;
+    o.actualY = racks > 0 ? o.cooling / racks : 0;
+    o.actualLoss = 1 / (2 * o.actualY + 1);
+    o.fitsCap = cap === 0 ? null : o.sysPower <= cap;
+  });
+
+  // --- Update DOM ---
+  const primary = options[0];  // All Small = reference
+  document.getElementById('calc-answer').innerHTML =
+    `<span class="num">${fmt0(primary.small)}</span> Small ACs<span class="conj">or</span><span class="num">${fmt0(options[1].big)}</span> Big ACs`;
+  document.getElementById('calc-loss').textContent = fmtPct(target);
+  document.getElementById('calc-butc').textContent = fmt0(actualBUTc);
+  document.getElementById('calc-marker').style.left = markerPos(target) + '%';
+
+  document.getElementById('c-r-per-rack').textContent = fmt2(reqPerRack);
+  document.getElementById('c-r-total-c').textContent = fmt1(totalCoolNeeded);
+  document.getElementById('c-r-butc').textContent = fmt1(actualBUTc);
+  document.getElementById('c-r-rackpow').textContent = fmt0(rackPow) + ' pwr';
+  document.getElementById('c-r-acpow').textContent =
+    cap === 0 ? 'unlimited' : fmt0(acPowBudget) + ' pwr';
+
+  // Table
+  const tbody = document.getElementById('c-tbody');
+  tbody.innerHTML = options.map(o => {
+    let chip;
+    if (o.fitsCap === null) chip = `<span class="status-chip neutral">—</span>`;
+    else if (o.fitsCap) chip = `<span class="status-chip ok">✓ YES</span>`;
+    else chip = `<span class="status-chip bad">✗ OVER</span>`;
+    return `<tr${o.fitsCap === false ? ' class="over"' : ''}>
+      <td>${o.name}</td>
+      <td class="chip">${fmt0(o.small)}</td>
+      <td class="chip">${fmt0(o.big)}</td>
+      <td>${fmt0(o.sysPower)}</td>
+      <td>${fmtPct(o.actualLoss)}</td>
+      <td class="right">${chip}</td>
+    </tr>`;
+  }).join('');
+
+  // Sanity check — optimize against same system power
+  const totalSysPow = primary.sysPower;
+  const K = 2.25 * totalSysPow;
+  const optRacks = K * SQRT_LEAK / 990;
+  const perRackButc = racks > 0 ? perfect / racks : 0;
+  const optBUTc = optRacks * perRackButc * (1 - OPT_LOSS);
+  const curBUTc = actualBUTc;
+  const delta = optBUTc - curBUTc;
+
+  document.getElementById('s-syspow').textContent = fmt0(totalSysPow) + ' pwr';
+  document.getElementById('s-optracks').textContent = fmt0(optRacks);
+  document.getElementById('s-optloss').textContent = fmtPct(OPT_LOSS);
+  document.getElementById('s-optbutc').textContent = fmt1(optBUTc);
+  document.getElementById('s-curbutc').textContent = fmt1(curBUTc);
+  const deltaEl = document.getElementById('s-delta');
+  deltaEl.textContent = fmtSigned(delta) + ' BUTc';
+  deltaEl.style.color = delta > curBUTc * 0.05 ? 'var(--red)' :
+                        delta < 0 ? 'var(--green)' : 'var(--text-primary)';
+
+  const callout = document.getElementById('s-callout');
+  if (delta > curBUTc * 0.05) {
+    callout.className = 'callout warn';
+    callout.innerHTML = `<strong>Racks are your bottleneck.</strong> You'd produce <strong>${fmtSigned(delta)} more BUTc</strong> at the same power budget by building <strong>${fmt0(optRacks - racks)} more racks</strong> and settling for ~13% loss. Head to <strong>Optimal Setup</strong> to plan the rebuild.`;
+  } else if (delta > 0) {
+    callout.className = 'callout';
+    callout.innerHTML = `<strong>Close to optimal.</strong> You'd gain a small amount of BUTc by adjusting the rack/AC split, but the current setup is reasonable.`;
+  } else {
+    callout.className = 'callout good';
+    callout.innerHTML = `<strong>You're at or above the optimum.</strong> If your rack count is fixed, chasing lower loss makes sense — you're already getting the most out of your racks.`;
+  }
+}
+
+// ============================================================
+// PAGE 2: OPTIMAL SETUP
+// ============================================================
+function computeOpt() {
+  const Pmax = Math.max(0, +document.getElementById('o-maxpow').value || 0);
+  const Puse = Math.max(0, +document.getElementById('o-curpow').value || 0);
+  const C0 = Math.max(0, +document.getElementById('o-curcool').value || 0);
+  const H0 = Math.max(0, +document.getElementById('o-curheat').value || 0);
+
+  const Pavail = Math.max(0, Pmax - Puse);
+  const K = 2.25 * Pavail + C0;
+  const Ropt = K * SQRT_LEAK / 990;
+  const Rheat = (K - H0) / 24.5;
+  const Rpwr = Pavail / 10;
+  const Rraw = Math.min(Ropt, Rheat, Rpwr);
+  const R = Math.max(0, Math.floor(Rraw));
+
+  const rackPow = R * RACK_POWER;
+  const acBudget = Math.max(0, Pavail - rackPow);
+  const smallCount = Math.floor(acBudget / AC_SMALL.power);
+  const acUsed = smallCount * AC_SMALL.power;
+  const sysPow = rackPow + acUsed;
+  const coolingDelivered = smallCount * AC_SMALL.cool + C0;
+  const cPerRack = R > 0 ? coolingDelivered / R : 0;
+  const loss = 1 / (2 * cPerRack + 1);
+  const perf60 = R * 8, act60 = perf60 * (1 - loss);
+  const perf90 = R * 20, act90 = perf90 * (1 - loss);
+  const heat = R * RACK_HEAT + H0;
+  const covers = coolingDelivered >= heat;
+
+  // AC breakdown (rounded down to fit budget)
+  const bigBudget = Math.floor(acBudget / AC_BIG.power);
+  const options = [
+    { name: 'All Small ACs', small: Math.floor(acBudget / AC_SMALL.power), big: 0 },
+    { name: 'All Big ACs',   small: 0, big: bigBudget },
+    { name: 'Mixed  ·  Bigs + Smalls', big: bigBudget, small: 0 },
+  ];
+  options[2].small = Math.floor((acBudget - options[2].big * AC_BIG.power) / AC_SMALL.power);
+  options.forEach(o => {
+    o.acPower = o.small * AC_SMALL.power + o.big * AC_BIG.power;
+    o.cooling = o.small * AC_SMALL.cool + o.big * AC_BIG.cool;
+    o.perRack = R > 0 ? (o.cooling + C0) / R : 0;
+    o.loss = 1 / (2 * o.perRack + 1);
+  });
+
+  // --- Update DOM ---
+  document.getElementById('opt-answer').innerHTML =
+    `Build <span class="num">${fmt0(R)}</span> racks<span class="conj">+</span><span class="num">${fmt0(options[0].small)}</span> Small ACs`;
+  document.getElementById('opt-loss').textContent = fmtPct(loss);
+  document.getElementById('opt-butc').textContent = fmt0(act90);
+  document.getElementById('opt-marker').style.left = markerPos(loss) + '%';
+
+  document.getElementById('o-racks').textContent = fmt0(R);
+  document.getElementById('o-rackpow').textContent = fmt0(rackPow) + ' pwr';
+  document.getElementById('o-acbudget').textContent = fmt0(acBudget) + ' pwr';
+  document.getElementById('o-acused').textContent = fmt0(acUsed) + ' pwr';
+  document.getElementById('o-syspow').textContent = fmt0(sysPow) + ' pwr';
+  document.getElementById('o-cool').textContent = fmt1(coolingDelivered);
+  document.getElementById('o-cprack').textContent = fmt2(cPerRack);
+  document.getElementById('o-lossp').textContent = fmtPct(loss);
+  document.getElementById('o-perf60').textContent = fmt1(perf60);
+  document.getElementById('o-act60').textContent = fmt1(act60);
+  document.getElementById('o-perf90').textContent = fmt1(perf90);
+  document.getElementById('o-act90').textContent = fmt1(act90);
+  document.getElementById('o-heat').textContent = fmt0(heat);
+  document.getElementById('o-covers').innerHTML = covers ?
+    `<span class="status-chip ok">✓ YES</span>` :
+    `<span class="status-chip bad">✗ SHORT</span>`;
+
+  const tbody = document.getElementById('o-tbody');
+  tbody.innerHTML = options.map(o => `<tr>
+    <td>${o.name}</td>
+    <td class="chip">${fmt0(o.small)}</td>
+    <td class="chip">${fmt0(o.big)}</td>
+    <td>${fmt0(o.acPower)}</td>
+    <td>${fmt2(o.perRack)}</td>
+    <td class="right">${fmtPct(o.loss)}</td>
+  </tr>`).join('');
+
+  document.getElementById('m-pavail').textContent = fmt0(Pavail);
+  document.getElementById('m-K').textContent = fmt1(K);
+  document.getElementById('m-Ropt').textContent = fmt2(Ropt);
+  document.getElementById('m-Rheat').textContent = fmt2(Rheat);
+  document.getElementById('m-Rpwr').textContent = fmt2(Rpwr);
+}
+
+// ============================================================
+// TABS + WIRING
+// ============================================================
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+['l-racks','l-perfect','l-small','l-big'].forEach(id =>
+  document.getElementById(id).addEventListener('input', computeLoss));
+['c-racks','c-perfect','c-target','c-cap'].forEach(id =>
+  document.getElementById(id).addEventListener('input', computeCalc));
+['o-maxpow','o-curpow','o-curcool','o-curheat'].forEach(id =>
+  document.getElementById(id).addEventListener('input', computeOpt));
+
+computeLoss();
+computeCalc();
+computeOpt();
+</script>
+</body>
+</html>
